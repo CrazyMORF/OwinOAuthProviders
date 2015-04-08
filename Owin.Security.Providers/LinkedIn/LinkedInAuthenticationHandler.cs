@@ -64,17 +64,10 @@ namespace Owin.Security.Providers.LinkedIn
                 string requestPrefix = Request.Scheme + "://" + Request.Host;
                 string redirectUri = requestPrefix + Request.PathBase + Options.CallbackPath;
 
-                // Build up the body for the token request
-                var body = new List<KeyValuePair<string, string>>();
-                body.Add(new KeyValuePair<string, string>("grant_type", "authorization_code"));
-                body.Add(new KeyValuePair<string, string>("code", code));
-                body.Add(new KeyValuePair<string, string>("redirect_uri", redirectUri));
-                body.Add(new KeyValuePair<string, string>("client_id", Options.ClientId));
-                body.Add(new KeyValuePair<string, string>("client_secret", Options.ClientSecret));
-
                 // Request the token
                 HttpResponseMessage tokenResponse =
-                    await httpClient.PostAsync(TokenEndpoint, new FormUrlEncodedContent(body));
+                    await httpClient.PostAsync(string.Format("{0}?grant_type=authorization_code&code={1}&redirect_uri={2}&client_id={3}&client_secret={4}",
+                        TokenEndpoint, code, redirectUri, Options.ClientId, Options.ClientSecret), new FormUrlEncodedContent(new List<KeyValuePair<string, string>>()));
                 tokenResponse.EnsureSuccessStatusCode();
                 string text = await tokenResponse.Content.ReadAsStringAsync();
 
